@@ -6,10 +6,10 @@ type oscStringState struct {
 
 func (oscState oscStringState) Handle(b byte) (s state, e error) {
 	oscState.parser.logf("OscString::Handle %#x", b)
-	nextState, err := oscState.baseState.Handle(b)
-	if nextState != nil || err != nil {
-		return nextState, err
-	}
+	// nextState, err := oscState.baseState.Handle(b)
+	// if nextState != nil || err != nil {
+	// 	return nextState, err
+	// }
 
 	switch {
 	case isOscStringTerminator(b):

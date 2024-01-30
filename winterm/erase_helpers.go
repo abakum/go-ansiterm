@@ -1,8 +1,9 @@
+//go:build windows
 // +build windows
 
 package winterm
 
-import "github.com/Azure/go-ansiterm"
+import "github.com/abakum/go-ansiterm"
 
 func (h *windowsAnsiEventHandler) clearRange(attributes uint16, fromCoord COORD, toCoord COORD) error {
 	// Ignore an invalid (negative area) request

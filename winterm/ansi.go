@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package winterm
@@ -9,7 +10,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/Azure/go-ansiterm"
+	"github.com/abakum/go-ansiterm"
 	windows "golang.org/x/sys/windows"
 )
 

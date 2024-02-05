@@ -13,7 +13,7 @@ func (gs groundState) Handle(b byte) (s state, e error) {
 	}
 
 	switch {
-	case sliceContains(printables, b):
+	case sliceContains(printables, b) || b > 0x7F: // Extended character set
 		return gs, gs.parser.print()
 
 	case sliceContains(executors, b):

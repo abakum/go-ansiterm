@@ -174,11 +174,12 @@ func getExecuteBytes() []byte {
 func getToGroundBytes() []byte {
 	groundBytes := []byte{0x18}
 	groundBytes = append(groundBytes, 0x1A)
-	groundBytes = append(groundBytes, getByteRange(0x80, 0x8F)...)
-	groundBytes = append(groundBytes, getByteRange(0x91, 0x97)...)
-	groundBytes = append(groundBytes, 0x99)
-	groundBytes = append(groundBytes, 0x9A)
-	groundBytes = append(groundBytes, 0x9C)
+	// Extended character set
+	// groundBytes = append(groundBytes, getByteRange(0x80, 0x8F)...)
+	// groundBytes = append(groundBytes, getByteRange(0x91, 0x97)...)
+	// groundBytes = append(groundBytes, 0x99)
+	// groundBytes = append(groundBytes, 0x9A)
+	// groundBytes = append(groundBytes, 0x9C)
 	return groundBytes
 }
 

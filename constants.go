@@ -90,6 +90,7 @@ const (
 	ANSI_COMMAND_LAST     = 0x7E
 	DCS_ENTRY             = 0x90
 	CSI_ENTRY             = 0x9B
+	ANSI_ST               = 0x9C
 	OSC_STRING            = 0x9D
 	ANSI_PARAMETER_SEP    = ";"
 	ANSI_CMD_G0           = '('
@@ -124,7 +125,7 @@ func getByteRange(start byte, end byte) []byte {
 	return bytes
 }
 
-var toGroundBytes = getToGroundBytes()
+var toGroundBytes = getToGroundBytes(false)
 var executors = getExecuteBytes()
 
 // SPACE		  20+A0 hex  Always and everywhere a blank space
@@ -171,15 +172,16 @@ func getExecuteBytes() []byte {
 	return executeBytes
 }
 
-func getToGroundBytes() []byte {
+func getToGroundBytes(allowNotECMAcp bool) []byte {
 	groundBytes := []byte{0x18}
 	groundBytes = append(groundBytes, 0x1A)
-	// Extended character set
-	// groundBytes = append(groundBytes, getByteRange(0x80, 0x8F)...)
-	// groundBytes = append(groundBytes, getByteRange(0x91, 0x97)...)
-	// groundBytes = append(groundBytes, 0x99)
-	// groundBytes = append(groundBytes, 0x9A)
-	// groundBytes = append(groundBytes, 0x9C)
+	if !allowNotECMAcp {
+		groundBytes = append(groundBytes, getByteRange(0x80, 0x8F)...)
+		groundBytes = append(groundBytes, getByteRange(0x91, 0x97)...)
+		groundBytes = append(groundBytes, 0x99)
+		groundBytes = append(groundBytes, 0x9A)
+		groundBytes = append(groundBytes, 0x9C)
+	}
 	return groundBytes
 }
 

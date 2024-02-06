@@ -20,11 +20,10 @@ type AnsiParser struct {
 	oscString          state
 	stateMap           []state
 
-	logf              func(string, ...interface{})
-	escapeInOscString bool
-	strictECMA        bool // if strictECMA is false then allow utf8 in OSC and ANSI_BEL as ST
-	allowNotECMAcp    bool // allow code pages incompatible with ECMA (94, 113, 114, 118, 121, 128) 8-bit single-byte coded graphic character sets
-	// if allowNotECMAcp is true then C1 control code will be ignored, use Fe instead
+	logf       func(string, ...interface{})
+	strictECMA bool // if strictECMA is false then allow utf8 in OSC and ANSI_BEL as ST
+	fe         bool // allow code pages incompatible with ECMA (94, 113, 114, 118, 121, 128) 8-bit single-byte coded graphic character sets
+	// if fe is true, then the control sequence Fe is used instead of the control code C1
 }
 
 type Option func(*AnsiParser)
@@ -35,10 +34,9 @@ func WithLogf(f func(string, ...interface{})) Option {
 	}
 }
 
-func WithAllowNotECMAcp(allowNotECMAcp bool) Option {
+func WithFe(fe bool) Option {
 	return func(ap *AnsiParser) {
-		ap.allowNotECMAcp = allowNotECMAcp
-		toGroundBytes = getToGroundBytes(allowNotECMAcp)
+		ap.fe = fe
 	}
 }
 

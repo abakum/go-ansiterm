@@ -7,7 +7,7 @@ type oscStringState struct {
 func (oscState oscStringState) Handle(b byte) (s state, e error) {
 	oscState.parser.logf("OscString::Handle %#x", b)
 	defer func() {
-		oscState.parser.escapeInOscString = b == ANSI_ESCAPE_PRIMARY
+		oscState.parser.context.previousChar = b
 	}()
 
 	if oscState.parser.strictECMA {
@@ -33,7 +33,8 @@ func isOscStringTerminator(b byte, oscState oscStringState) bool {
 		st = ANSI_ST
 	}
 
-	return (int(b) == st) || (oscState.parser.escapeInOscString && b == ANSI_CMD_STR_TERM)
+	return b == byte(st) ||
+		(oscState.parser.context.previousChar == ANSI_ESCAPE_PRIMARY && b == ANSI_CMD_STR_TERM)
 }
 
 /*

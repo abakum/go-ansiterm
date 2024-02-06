@@ -25,7 +25,7 @@ func TestAnyToX(t *testing.T) {
 	anyToXHelper(t, []byte{DCS_ENTRY}, "DcsEntry")
 	anyToXHelper(t, []byte{OSC_STRING}, "OscString")
 	anyToXHelper(t, []byte{CSI_ENTRY}, "CsiEntry")
-	anyToXHelper(t, toGroundBytes, "Ground")
+	anyToXHelper(t, getToGroundBytes(false), "Ground")
 }
 
 func TestCollectCsiParams(t *testing.T) {

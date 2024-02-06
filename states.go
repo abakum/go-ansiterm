@@ -24,17 +24,17 @@ func (base baseState) Exit() error {
 }
 
 func (base baseState) Handle(b byte) (s state, e error) {
-
+	fe := base.parser.fe
 	switch {
-	case b == CSI_ENTRY:
+	case !fe && b == CSI_ENTRY:
 		return base.parser.csiEntry, nil
-	case b == DCS_ENTRY:
+	case !fe && b == DCS_ENTRY:
 		return base.parser.dcsEntry, nil
 	case b == ANSI_ESCAPE_PRIMARY:
 		return base.parser.escape, nil
-	case b == OSC_STRING:
+	case !fe && b == OSC_STRING:
 		return base.parser.oscString, nil
-	case sliceContains(toGroundBytes, b):
+	case sliceContains(getToGroundBytes(fe), b):
 		return base.parser.ground, nil
 	}
 
@@ -47,14 +47,7 @@ func (base baseState) Name() string {
 
 func (base baseState) Transition(s state) error {
 	if s == base.parser.ground {
-		execBytes := []byte{0x18}
-		execBytes = append(execBytes, 0x1A)
-		execBytes = append(execBytes, getByteRange(0x80, 0x8F)...)
-		execBytes = append(execBytes, getByteRange(0x91, 0x97)...)
-		execBytes = append(execBytes, 0x99)
-		execBytes = append(execBytes, 0x9A)
-
-		if sliceContains(execBytes, base.parser.context.currentChar) {
+		if sliceContains(getExecBytes(base.parser.fe), base.parser.context.currentChar) {
 			return base.parser.execute()
 		}
 	}

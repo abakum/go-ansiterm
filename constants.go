@@ -88,6 +88,7 @@ const (
 	ANSI_OSC_STRING_ENTRY = 0x5D
 	ANSI_COMMAND_FIRST    = 0x40
 	ANSI_COMMAND_LAST     = 0x7E
+	ANSI_DEL              = 0x7F
 	DCS_ENTRY             = 0x90
 	CSI_ENTRY             = 0x9B
 	ANSI_ST               = 0x9C
@@ -125,8 +126,7 @@ func getByteRange(start byte, end byte) []byte {
 	return bytes
 }
 
-var toGroundBytes = getToGroundBytes(false)
-var executors = getExecuteBytes()
+var executors = getExecutors()
 
 // SPACE		  20+A0 hex  Always and everywhere a blank space
 // Intermediate	  20-2F hex   !"#$%&'()*+,-./
@@ -165,24 +165,31 @@ func getEscapeToGroundBytes() []byte {
 	return escapeToGroundBytes
 }
 
-func getExecuteBytes() []byte {
+func getExecutors() []byte {
 	executeBytes := getByteRange(0x00, 0x17)
 	executeBytes = append(executeBytes, 0x19)
 	executeBytes = append(executeBytes, getByteRange(0x1C, 0x1F)...)
 	return executeBytes
 }
 
-func getToGroundBytes(allowNotECMAcp bool) []byte {
-	groundBytes := []byte{0x18}
-	groundBytes = append(groundBytes, 0x1A)
-	if !allowNotECMAcp {
-		groundBytes = append(groundBytes, getByteRange(0x80, 0x8F)...)
-		groundBytes = append(groundBytes, getByteRange(0x91, 0x97)...)
-		groundBytes = append(groundBytes, 0x99)
-		groundBytes = append(groundBytes, 0x9A)
+func getToGroundBytes(fe bool) []byte {
+	groundBytes := getExecBytes(fe)
+	if !fe {
 		groundBytes = append(groundBytes, 0x9C)
 	}
 	return groundBytes
+}
+
+func getExecBytes(fe bool) []byte {
+	execBytes := []byte{0x18}
+	execBytes = append(execBytes, 0x1A)
+	if !fe {
+		execBytes = append(execBytes, getByteRange(0x80, 0x8F)...)
+		execBytes = append(execBytes, getByteRange(0x91, 0x97)...)
+		execBytes = append(execBytes, 0x99)
+		execBytes = append(execBytes, 0x9A)
+	}
+	return execBytes
 }
 
 // Delete		     7F hex  Always and everywhere ignored

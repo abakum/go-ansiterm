@@ -13,8 +13,6 @@ import (
 	"golang.org/x/text/transform"
 )
 
-var o bytes.Buffer
-
 func main() {
 
 	var (
@@ -61,7 +59,7 @@ func main() {
 
 	wInUTF8 := transform.NewWriter(&b, e)
 
-	//encode from utf8
+	//encode from utf8 to cp
 	wInUTF8.Write(title.Bytes())
 	wInUTF8.Write(msg.Bytes())
 	wInUTF8.Close()
@@ -72,135 +70,11 @@ func main() {
 	fmt.Printf("%#v\n", b)
 	fmt.Println(b.String())
 
-	parser := ansiterm.CreateParser("Ground", &handler{})
-	i, err := parser.Parse(b.Bytes())
-	fmt.Println()
-	fmt.Println(i, err)
+	o, err := ansiterm.Strip(b, ansiterm.WithFe(true))
+	fmt.Println(o, err)
 
-	rInUTF8 := transform.NewReader(strings.NewReader(o.String()), d)
+	// decode from cp to utf8
+	rInUTF8 := transform.NewReader(strings.NewReader(o), d)
 	decBytes, _ := io.ReadAll(rInUTF8)
-	fmt.Println()
 	fmt.Println(string(decBytes))
-
-}
-
-type handler struct{}
-
-func (h *handler) Print(b byte) error {
-	fmt.Printf("p%#x ", b)
-	o.WriteByte(b)
-	return nil
-}
-
-func (h *handler) Execute(b byte) error {
-	fmt.Printf("e%#x ", b)
-	return nil
-}
-
-func (h *handler) CUU(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) CUD(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) CUF(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) CUB(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) CNL(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) CPL(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) CHA(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) VPA(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) CUP(int, int) error {
-	panic("not implemented")
-}
-
-func (h *handler) HVP(int, int) error {
-	panic("not implemented")
-}
-
-func (h *handler) DECTCEM(bool) error {
-	panic("not implemented")
-}
-
-func (h *handler) DECOM(bool) error {
-	panic("not implemented")
-}
-
-func (h *handler) DECCOLM(bool) error {
-	panic("not implemented")
-}
-
-func (h *handler) ED(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) EL(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) IL(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) DL(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) ICH(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) DCH(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) SGR([]int) error {
-	panic("not implemented")
-}
-
-func (h *handler) SU(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) SD(int) error {
-	panic("not implemented")
-}
-
-func (h *handler) DA([]string) error {
-	panic("not implemented")
-}
-
-func (h *handler) DECSTBM(int, int) error {
-	panic("not implemented")
-}
-
-func (h *handler) IND() error {
-	panic("not implemented")
-}
-
-func (h *handler) RI() error {
-	panic("not implemented")
-}
-
-func (h *handler) Flush() error {
-	return nil
 }

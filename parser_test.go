@@ -9,14 +9,15 @@ func TestStateTransitions(t *testing.T) {
 	stateTransitionHelper(t, "CsiEntry", "Ground", alphabetics)
 	stateTransitionHelper(t, "CsiEntry", "CsiParam", csiCollectables)
 	stateTransitionHelper(t, "Escape", "CsiEntry", []byte{ANSI_ESCAPE_SECONDARY})
-	stateTransitionHelper(t, "Escape", "OscString", []byte{0x5D})
+	stateTransitionHelper(t, "Escape", "OscString", []byte{ANSI_OSC_STRING_ENTRY})
 	stateTransitionHelper(t, "Escape", "Ground", escapeToGroundBytes)
 	stateTransitionHelper(t, "Escape", "EscapeIntermediate", intermeds)
 	stateTransitionHelper(t, "EscapeIntermediate", "EscapeIntermediate", intermeds)
 	stateTransitionHelper(t, "EscapeIntermediate", "EscapeIntermediate", executors)
 	stateTransitionHelper(t, "EscapeIntermediate", "Ground", escapeIntermediateToGroundBytes)
 	stateTransitionHelper(t, "OscString", "Ground", []byte{ANSI_BEL})
-	stateTransitionHelper(t, "OscString", "Ground", []byte{0x5C})
+	stateTransitionHelper(t, "OscString", "Escape", []byte{ANSI_ESCAPE_PRIMARY})
+	stateTransitionHelper(t, "Escape", "Ground", []byte{ANSI_CMD_STR_TERM})
 	stateTransitionHelper(t, "Ground", "Ground", executors)
 }
 

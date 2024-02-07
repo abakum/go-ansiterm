@@ -4,14 +4,33 @@ import (
 	"bytes"
 )
 
-func Strip(b bytes.Buffer, opt ...Option) (string, error) {
+func StripBuffer(b *bytes.Buffer, opt ...Option) (string, error) {
 	h := handler{}
 	parser := CreateParser("Ground", &h, opt...)
 	_, err := parser.Parse(b.Bytes())
 	if err != nil {
 		return "", err
 	}
+	b.Reset()
+
 	return h.buf.String(), nil
+}
+
+func StripBytes(bs []byte, opt ...Option) (string, error) {
+	var b bytes.Buffer
+	b.Write(bs)
+	return StripBuffer(&b, opt...)
+}
+
+func Strip(bs []byte, opt ...Option) ([]byte, error) {
+	h := handler{}
+	parser := CreateParser("Ground", &h, opt...)
+	_, err := parser.Parse(bs)
+	if err != nil {
+		return nil, err
+	}
+
+	return h.buf.Bytes(), nil
 }
 
 type handler struct {

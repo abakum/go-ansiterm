@@ -1,5 +1,7 @@
 package ansiterm
 
+import "bytes"
+
 const LogEnv = "DEBUG_TERMINAL"
 
 // ANSI constants
@@ -117,60 +119,70 @@ const (
 	FILL_CHARACTER = ' '
 )
 
-func getByteRange(start byte, end byte) []byte {
-	bytes := make([]byte, 0, 32)
-	for i := start; i <= end; i++ {
-		bytes = append(bytes, byte(i))
-	}
-
-	return bytes
+func getByteRanges(startEnd ...int) []byte {
+	var b bytes.Buffer
+	writeByteRanges(&b, startEnd...)
+	return b.Bytes()
 }
 
-var executors = getExecutors()
+func writeByteRanges(b *bytes.Buffer, startEnd ...int) {
+	lse := len(startEnd)
+	for k := 0; k < lse; k += 2 {
+		start := startEnd[k]
+		end := start
+		if k+1 < lse {
+			end = startEnd[k+1]
+		}
+		for i := start; i <= end; i++ {
+			b.WriteByte(byte(i))
+		}
+	}
+}
+
+var executors = getByteRanges(
+	0x00, 0x17,
+	0x19, 0x19,
+	0x1C, 0x1F,
+)
 
 // SPACE		  20+A0 hex  Always and everywhere a blank space
 // Intermediate	  20-2F hex   !"#$%&'()*+,-./
-var intermeds = getByteRange(0x20, 0x2F)
+var intermeds = getByteRanges(0x20, 0x2F)
 
 // Parameters	  30-3F hex  0123456789:;<=>?
 // CSI Parameters 30-39, 3B hex 0123456789;
-var csiParams = getByteRange(0x30, 0x3F)
+var csiParams = getByteRanges(0x30, 0x3F)
 
-var csiCollectables = append(getByteRange(0x30, 0x39), getByteRange(0x3B, 0x3F)...)
+var csiCollectables = getByteRanges(
+	0x30, 0x39,
+	0x3B, 0x3F,
+)
 
 // Uppercase	  40-5F hex  @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
-var upperCase = getByteRange(0x40, 0x5F)
+var upperCase = getByteRanges(0x40, 0x5F)
 
 // Lowercase	  60-7E hex  `abcdefghijlkmnopqrstuvwxyz{|}~
-var lowerCase = getByteRange(0x60, 0x7E)
+var lowerCase = getByteRanges(0x60, 0x7E)
 
 // Alphabetics	  40-7E hex  (all of upper and lower case)
 var alphabetics = append(upperCase, lowerCase...)
 
-var printables = getByteRange(0x20, 0x7F)
+var printables = getByteRanges(
+	0x20, 0x7F, //GL area
+	0xA0, 0xFF, //GR area
+)
 
-var escapeIntermediateToGroundBytes = getByteRange(0x30, 0x7E)
-var escapeToGroundBytes = getEscapeToGroundBytes()
+var escapeIntermediateToGroundBytes = getByteRanges(0x30, 0x7E)
+var escapeToGroundBytes = getByteRanges(
+	0x30, 0x4F,
+	0x51, 0x57,
+	0x59, 0x5A,
+	0x5C, 0x5C,
+	0x60, 0x7E,
+)
 
 // See http://www.vt100.net/emu/vt500_parser.png for description of the complex
 // byte ranges below
-
-func getEscapeToGroundBytes() []byte {
-	escapeToGroundBytes := getByteRange(0x30, 0x4F)
-	escapeToGroundBytes = append(escapeToGroundBytes, getByteRange(0x51, 0x57)...)
-	escapeToGroundBytes = append(escapeToGroundBytes, 0x59)
-	escapeToGroundBytes = append(escapeToGroundBytes, 0x5A)
-	escapeToGroundBytes = append(escapeToGroundBytes, 0x5C)
-	escapeToGroundBytes = append(escapeToGroundBytes, getByteRange(0x60, 0x7E)...)
-	return escapeToGroundBytes
-}
-
-func getExecutors() []byte {
-	executeBytes := getByteRange(0x00, 0x17)
-	executeBytes = append(executeBytes, 0x19)
-	executeBytes = append(executeBytes, getByteRange(0x1C, 0x1F)...)
-	return executeBytes
-}
 
 func getToGroundBytes(fe bool) []byte {
 	groundBytes := getExecBytes(fe)
@@ -181,15 +193,17 @@ func getToGroundBytes(fe bool) []byte {
 }
 
 func getExecBytes(fe bool) []byte {
-	execBytes := []byte{0x18}
-	execBytes = append(execBytes, 0x1A)
+	var b bytes.Buffer
+	b.WriteByte(0x18)
+	b.WriteByte(0x1A)
 	if !fe {
-		execBytes = append(execBytes, getByteRange(0x80, 0x8F)...)
-		execBytes = append(execBytes, getByteRange(0x91, 0x97)...)
-		execBytes = append(execBytes, 0x99)
-		execBytes = append(execBytes, 0x9A)
+		writeByteRanges(&b,
+			0x80, 0x8F,
+			0x91, 0x97,
+			0x99, 0x9A,
+		)
 	}
-	return execBytes
+	return b.Bytes()
 }
 
 // Delete		     7F hex  Always and everywhere ignored

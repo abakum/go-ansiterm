@@ -1,2 +1,4 @@
 *.exe
 example/*.exe
+example/*.log
+

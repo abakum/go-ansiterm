@@ -19,17 +19,34 @@ func main() {
 		b, title, msg bytes.Buffer
 		e             *encoding.Encoder
 		d             *encoding.Decoder
+		o             string
+		err           error
 	)
+	crash := 0
+	fe := 0
 	switch 1 {
+	case 0:
+		// ECMA-13 ISO 8859-5 chcp 28595
+		crash = 0
+		fe = 0
+		cp := charmap.ISO8859_5
+		e = cp.NewEncoder()
+		d = cp.NewDecoder()
 	case 1:
+		crash = 1
+		fe = 1
 		cp := charmap.CodePage866
 		e = cp.NewEncoder()
 		d = cp.NewDecoder()
 	case 2:
+		crash = 0
+		fe = 0
 		cp := charmap.Windows1251
 		e = cp.NewEncoder()
 		d = cp.NewDecoder()
 	case 3:
+		crash = 1
+		fe = 1
 		cp := unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM)
 		e = cp.NewEncoder()
 		d = cp.NewDecoder()
@@ -65,16 +82,29 @@ func main() {
 	wInUTF8.Close()
 
 	//write in utf8
-	b.Write(title.Bytes())
+	switch crash {
+	case 1:
+		b.Write(title.Bytes()) //crash
+	}
 
 	fmt.Printf("%#v\n", b)
 	fmt.Println(b.String())
 
-	o, err := ansiterm.Strip(b, ansiterm.WithFe(true))
+	switch fe {
+	case 0:
+		o, err = ansiterm.StripBuffer(&b)
+	case 1:
+		o, err = ansiterm.StripBuffer(&b, ansiterm.WithFe(true))
+	}
 	fmt.Println(o, err)
+
+	b.Write(title.Bytes())
+	b.WriteString("123")
+	fmt.Println(ansiterm.StripBuffer(&b, ansiterm.WithFe(true)))
 
 	// decode from cp to utf8
 	rInUTF8 := transform.NewReader(strings.NewReader(o), d)
 	decBytes, _ := io.ReadAll(rInUTF8)
 	fmt.Println(string(decBytes))
+	fmt.Scanln()
 }

@@ -6,16 +6,10 @@ type oscStringState struct {
 
 func (oscState oscStringState) Handle(b byte) (s state, e error) {
 	oscState.parser.logf("OscString::Handle %#x", b)
-	// defer func() {
-	// 	oscState.parser.context.previousChar = b
-	// }()
-
-	// if  oscState.parser.strictECMA {
 	nextState, err := oscState.baseState.Handle(b)
 	if nextState != nil || err != nil {
 		return nextState, err
 	}
-	// }
 
 	switch {
 	case isOscStringTerminator(b, oscState):
@@ -28,12 +22,14 @@ func (oscState oscStringState) Handle(b byte) (s state, e error) {
 // See below for OSC string terminators for linux
 // http://man7.org/linux/man-pages/man4/console_codes.4.html
 func isOscStringTerminator(b byte, oscState oscStringState) bool {
-	st := ANSI_BEL
-	if oscState.parser.strictECMA {
-		st = ANSI_ST
+
+	if b == ANSI_BEL || // not strict ECMA
+		// b == 0x5C || // need []byte{ANSI_ESCAPE_PRIMARY, ANSI_CMD_STR_TERM} not []byte{ANSI_CMD_STR_TERM}
+		(!oscState.parser.fe && b == 0x9C) {
+		return true
 	}
 
-	return b == byte(st) //|| (oscState.parser.context.previousChar == ANSI_ESCAPE_PRIMARY && b == ANSI_CMD_STR_TERM)
+	return false
 }
 
 /*

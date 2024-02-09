@@ -24,8 +24,8 @@ func (oscState oscStringState) Handle(b byte) (s state, e error) {
 func isOscStringTerminator(b byte, oscState oscStringState) bool {
 
 	if b == ANSI_BEL || // not strict ECMA
-		// b == 0x5C || // need []byte{ANSI_ESCAPE_PRIMARY, ANSI_CMD_STR_TERM} not []byte{ANSI_CMD_STR_TERM}
-		(!oscState.parser.fe && b == 0x9C) {
+		// b == ANSI_CMD_STR_TERM || // need []byte{ANSI_ESCAPE_PRIMARY, ANSI_CMD_STR_TERM} not []byte{ANSI_CMD_STR_TERM}
+		(!oscState.parser.fe && b == ANSI_ST) {
 		return true
 	}
 

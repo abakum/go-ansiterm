@@ -1,6 +1,7 @@
 package ansiterm
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 )
@@ -139,4 +140,44 @@ func TestC0(t *testing.T) {
 
 func TestEscDispatch(t *testing.T) {
 	funcCallParamHelper(t, []byte{'M'}, "Escape", "Ground", []string{"RI([])"})
+}
+
+func TestByteRanges(t *testing.T) {
+	actuals := [][]byte{
+		getByteRanges(0xFF),       // omit end then end==start case end==start then append only one byte==start
+		getByteRanges(0xFF, 0xFF), // end==start then append only one byte==start
+		getByteRanges(0xFE, 0xFF), // start<end then append bytes from start to end
+		getByteRanges(
+			0x7E, 0x7F, // start<end then append bytes from start to end
+			0xFE, 0xFF, // start<end then append bytes from start to end
+		),
+		getByteRanges(
+			0x7E, 0x7F, // start<end then append bytes from start to end
+			0xAE, 0xAE, // end==start then append only one byte==start
+			0xFE, // omit end then end==start case end==start then append only one byte==start
+		),
+	}
+	expecteds := [][]byte{
+		{0xFF},
+		{0xFF},
+		{0xFE, 0xFF},
+		{
+			0x7E, 0x7F,
+			0xFE, 0xFF,
+		},
+		{
+			0x7E, 0x7F,
+			0xAE,
+			0xFE,
+		},
+	}
+
+	for i, actual := range actuals {
+		expected := expecteds[i]
+		if !bytes.Equal(actual, expected) {
+			t.Errorf("Actual   bytes: %v", actual)
+			t.Errorf("Expected bytes: %v", expected)
+			return
+		}
+	}
 }
